@@ -5,8 +5,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 using NUnit.Framework;
 using Scriban.Functions;
+using Scriban.Runtime;
 
 namespace Scriban.Tests
 {
@@ -186,6 +189,102 @@ namespace Scriban.Tests
             public void TestMathRandomError()
             {
                 TestParser.AssertTemplate("text(1,4) : error : minValue must be greater than maxValue", "{{ math.random 11 10 }}");
+            }
+        }
+
+        public class Custom
+        {
+            [Test]
+            public void TestInstanceCall()
+            {
+                var script = "{{\n" +
+                             " obj.append_to_sb(sb);\n" +
+                             " obj.get_test_string(sb.to_string())\n" +
+                             "}}";
+                var template = Template.Parse(script);
+                var testInstance = new TestClass();
+
+                var ctx = new TemplateContext();
+                var so = new ScriptObject
+                {
+                    ["obj"] = testInstance,
+                    ["sb"] = new StringBuilder()
+                };
+                ctx.PushGlobal(so);
+
+                var res = template.Render(ctx);
+                Assert.AreEqual("nice TestString nice", res);
+            }
+
+            [Test]
+            public void TestAsynchronousInstanceCall()
+            {
+                var script = "{{obj.call_async()}}";
+                var template = Template.Parse(script);
+
+                TemplateContext ctx = GetContext();
+
+                var res = template.Render(ctx);
+                Assert.AreEqual("nice", res);
+            }
+
+            [Test]
+            public void TestInstanceFieldAccess()
+            {
+                var script = "{{obj.test_int}}";
+                var template = Template.Parse(script);
+
+                TemplateContext ctx = GetContext();
+
+                var res = template.Render(ctx);
+                Assert.AreEqual("42", res);
+            }
+
+            [Test]
+            public void TestInstancePropertyAccess()
+            {
+                var script = "{{obj.test_float}}";
+                var template = Template.Parse(script);
+                TemplateContext ctx = GetContext();
+
+                var res = template.Render(ctx);
+                Assert.AreEqual("1337", res);
+            }
+
+            private static TemplateContext GetContext()
+            {
+                var ctx = new TemplateContext();
+                var so = new ScriptObject();
+                so["obj"] = new TestClass();
+                ctx.PushGlobal(so);
+                return ctx;
+            }
+        }
+
+        public class TestClass
+        {
+            private string _test = "nice";
+            public int TestInt = 42;
+            public float TestFloat { get; } = 1337.0f;
+
+            public string GetTestString(string input)
+            {
+                return _test + " TestString " + input;
+            }
+
+            public void AppendToSb(StringBuilder sb)
+            {
+                sb.Append(_test);
+            }
+
+            public static string Geil()
+            {
+                return "hier";
+            }
+
+            public Task<string> CallAsync()
+            {
+                return Task.Run(() => _test);
             }
         }
     }

@@ -62,15 +62,21 @@ namespace Scriban.Runtime.Accessors
             MemberInfo memberAccessor;
             if (_members.TryGetValue(member, out memberAccessor))
             {
-                var fieldAccessor = memberAccessor as FieldInfo;
-                if (fieldAccessor != null)
+                if (memberAccessor is FieldInfo fieldAccessor)
                 {
                     value = fieldAccessor.GetValue(target);
-                    return true;
                 }
+                else if (memberAccessor is PropertyInfo propInfo)
+                {
+                    value = propInfo.GetValue(target);
+                }
+                else if (memberAccessor is MethodInfo methodInfo)
+                {
+                    value = new ScriptCallableFunction(methodInfo, target);
+                }
+                else
+                    return false;
 
-                var propertyAccessor = (PropertyInfo)memberAccessor;
-                value = propertyAccessor.GetValue(target);
                 return true;
             }
             return false;
@@ -167,6 +173,19 @@ namespace Scriban.Runtime.Accessors
                                 _members.Add(newPropertyName, property);
                             }
                         }
+                    }
+                }
+
+                foreach(var method in type.GetMethods(BindingFlags.Static | BindingFlags.Instance | BindingFlags.Public))
+                {
+                    var keep = method.GetCustomAttribute<ScriptMemberIgnoreAttribute>() == null;
+                    if(keep && method.IsPublic)
+                    {
+                        var newMethodName = Rename(method);
+                        if(string.IsNullOrEmpty(newMethodName))
+                            newMethodName = method.Name;
+                        if (!_members.ContainsKey(newMethodName))
+                            _members.Add(newMethodName, method);
                     }
                 }
 

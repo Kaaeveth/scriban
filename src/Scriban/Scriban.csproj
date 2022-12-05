@@ -3,4 +3,7 @@
   <PropertyGroup>
     <PackageId>Scriban</PackageId>
   </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="Runtime\ScriptFunction.cs" />
+  </ItemGroup>
 </Project>

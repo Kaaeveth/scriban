@@ -293,7 +293,7 @@ namespace Scriban.Runtime
 
                 if ((flags & ScriptMemberImportFlags.Method) != 0 && useStatic)
                 {
-                    foreach (var method in typeInfo.GetMethods(BindingFlags.Static | BindingFlags.Public| BindingFlags.DeclaredOnly))
+                    foreach (var method in typeInfo.GetMethods(BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public| BindingFlags.DeclaredOnly))
                     {
                         if (filter != null && !filter(method))
                         {
