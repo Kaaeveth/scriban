@@ -217,6 +217,17 @@ namespace Scriban.Tests
             }
 
             [Test]
+            public void TestInstanceCallRenamed()
+            {
+                var script = "{{obj.GetTestString(\"nice\")}}";
+                var template = Template.Parse(script);
+                TemplateContext ctx = GetContext();
+                ctx.MemberRenamer = m => m.Name;
+                var res = template.Render(ctx);
+                Assert.AreEqual("nice TestString nice", res);
+            }
+
+            [Test]
             public void TestAsynchronousInstanceCall()
             {
                 var script = "{{obj.call_async()}}";
@@ -249,6 +260,28 @@ namespace Scriban.Tests
 
                 var res = template.Render(ctx);
                 Assert.AreEqual("1337", res);
+            }
+
+            [Test]
+            public void TestAsyncEnumerableTask()
+            {
+                var script = "{{ for i in obj.enumerable_async()}}{{i}}{{end}}";
+                var template = Template.Parse(script);
+                TemplateContext ctx = GetContext();
+
+                var res = template.Render(ctx);
+                Assert.AreEqual("testtest2", res);
+            }
+
+            [Test]
+            public void TestTaskNonGeneric()
+            {
+                var script = "{{obj.call_task()}}";
+                var template = Template.Parse(script);
+                TemplateContext ctx = GetContext();
+
+                var res = template.Render(ctx);
+                Assert.Pass();
             }
 
             private static TemplateContext GetContext()
@@ -285,6 +318,17 @@ namespace Scriban.Tests
             public Task<string> CallAsync()
             {
                 return Task.Run(() => _test);
+            }
+
+            public Task CallTask()
+            {
+                return Task.CompletedTask;
+            }
+
+            public async Task<IEnumerable<string>> EnumerableAsync()
+            {
+                await Task.Run(() => 1 + 2);
+                return new List<string> { "test", "test2" };
             }
         }
     }

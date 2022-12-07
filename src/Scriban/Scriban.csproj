@@ -1,7 +1,13 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <Import Project="Scriban.props" />
   <PropertyGroup>
     <PackageId>Scriban</PackageId>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <!--<Version>5.6.0-local</Version>-->
+    <VersionPrefix>5.6.0</VersionPrefix>
+    <AssemblyVersion>5.6.0</AssemblyVersion>
+    <VersionSuffix>local</VersionSuffix>
+    <RollForward>Major</RollForward>
   </PropertyGroup>
   <ItemGroup>
     <Compile Remove="Runtime\ScriptFunction.cs" />

@@ -37,17 +37,12 @@ namespace Scriban.Runtime
         public object Invoke(TemplateContext context, ScriptNode callerContext, ScriptArray arguments, ScriptBlockStatement blockStatement)
         {
             var res = _methodInfo.Invoke(_target, arguments.ToArray()) ?? string.Empty;
-            var genericReturnTypes = _methodInfo.ReturnType.GenericTypeArguments;
-            if(genericReturnTypes.Length > 0)
+            try
             {
-                var genericTask = typeof(Task<>).MakeGenericType(genericReturnTypes);
-                if(res.GetType() == genericTask)
-                {
-                    dynamic resTask = res;
-                    resTask.Wait();
-                    return resTask.Result;
-                }
-            }
+                dynamic resTask = res;
+                resTask.Wait();
+                return resTask.Result;
+            } catch(Exception){} // Wenn es keine asynchrone Operation / Task war, dann einfach ignorieren
             return res;
         }
 
