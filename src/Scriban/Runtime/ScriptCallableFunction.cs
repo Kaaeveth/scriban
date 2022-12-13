@@ -6,6 +6,7 @@ using System;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using Microsoft.CSharp.RuntimeBinder;
 using Scriban.Syntax;
 
 namespace Scriban.Runtime
@@ -42,7 +43,7 @@ namespace Scriban.Runtime
                 dynamic resTask = res;
                 resTask.Wait();
                 return resTask.Result;
-            } catch(Exception){} // Wenn es keine asynchrone Operation / Task war, dann einfach ignorieren
+            } catch(RuntimeBinderException) {} // Wenn es keine asynchrone Operation / Task war, dann einfach ignorieren
             return res;
         }
 
