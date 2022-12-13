@@ -8,8 +8,10 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Numerics;
 using System.Reflection; // Leave this as it is required by some .NET targets
+using System.Runtime.CompilerServices;
 using System.Text;
 using Scriban.Functions;
 using Scriban.Helpers;
@@ -495,6 +497,18 @@ namespace Scriban
             if (destinationType == typeof(IList))
             {
                 return ToList(span, value);
+            }
+
+            if(destinationType.IsGenericType && destinationType.GetGenericTypeDefinition() == typeof(IList<>))
+            {
+                var genType = destinationType.GetGenericArguments()[0];
+                var listType = typeof(List<>).MakeGenericType(genType);
+                var l = (IList)Activator.CreateInstance(listType);
+                foreach(var v in (dynamic)value)
+                {
+                    l.Add(v);
+                }
+                return l;
             }
 
             if (destinationType.IsAssignableFrom(typeInfo))

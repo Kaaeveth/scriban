@@ -284,6 +284,39 @@ namespace Scriban.Tests
                 Assert.Pass();
             }
 
+            [Test]
+            public void TestTaskCallWithException()
+            {
+                var script = "{{obj.call_async_fail()}}";
+                var template = Template.Parse(script);
+                TemplateContext ctx = GetContext();
+
+                Assert.Throws<ScriptRuntimeException>(() => template.Render(ctx));
+            }
+
+            [Test]
+            public void Property_Setter()
+            {
+                var script = "{{obj.test_float = 42.0f}}";
+                var template = Template.Parse(script);
+                TemplateContext ctx = GetContext();
+                template.Render(ctx);
+
+                Assert.That(ctx.CurrentGlobal.TryGetValue("obj", out dynamic obj));
+                Assert.AreEqual(42.0f, obj.TestFloat);
+            }
+
+            [Test]
+            public void Property_Setter_Array()
+            {
+                var script = "{{ obj.test_list = obj.test_list | array.add \"password\" }}";
+                var template = Template.Parse(script);
+                TemplateContext ctx = GetContext();
+                template.Render(ctx);
+
+                Assert.That(ctx.CurrentGlobal.TryGetValue("obj", out dynamic obj));
+                CollectionAssert.AreEquivalent(new List<string> {"password"}, obj.TestList);
+            }
             private static TemplateContext GetContext()
             {
                 var ctx = new TemplateContext();
